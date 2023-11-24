@@ -4,10 +4,8 @@ from __future__ import annotations
 import functools
 from pathlib import Path
 from typing import Any, List, Optional
-from warnings import warn
 
 from gooddata_api_client.exceptions import NotFoundException
-from gooddata_api_client.model.declarative_pdm import DeclarativePdm
 from gooddata_sdk.catalog.catalog_service_base import CatalogServiceBase
 from gooddata_sdk.catalog.data_source.action_model.requests.ldm_request import CatalogGenerateLdmRequest
 from gooddata_sdk.catalog.data_source.action_model.requests.scan_model_request import CatalogScanModelRequest
@@ -18,10 +16,7 @@ from gooddata_sdk.catalog.data_source.declarative_model.data_source import (
     CatalogDeclarativeDataSource,
     CatalogDeclarativeDataSources,
 )
-from gooddata_sdk.catalog.data_source.declarative_model.physical_model.pdm import (
-    CatalogDeclarativeTables,
-    CatalogScanResultPdm,
-)
+from gooddata_sdk.catalog.data_source.declarative_model.physical_model.pdm import CatalogScanResultPdm
 from gooddata_sdk.catalog.data_source.entity_model.content_objects.table import CatalogDataSourceTable
 from gooddata_sdk.catalog.data_source.entity_model.data_source import CatalogDataSource
 from gooddata_sdk.catalog.entity import TokenCredentialsFromFile
@@ -255,163 +250,6 @@ class CatalogDataSourceService(CatalogServiceBase):
         data_sources = self.load_declarative_data_sources(layout_root_path)
         self.put_declarative_data_sources(data_sources, credentials_path, test_data_sources)
 
-    def get_declarative_pdm(self, data_source_id: str) -> CatalogDeclarativeTables:
-        """Retrieve physical data model for a given data source.
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-
-        Returns:
-            CatalogDeclarativeTables:
-                Physical Data Model object.
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return CatalogDeclarativeTables.from_api(self._layout_api.get_pdm_layout(data_source_id).get("pdm"))
-
-    def put_declarative_pdm(self, data_source_id: str, declarative_tables: CatalogDeclarativeTables) -> None:
-        """Set physical data model for a given data source.
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-            declarative_tables (CatalogDeclarativeTables):
-                Physical Data Model object. Can be obtained via get_declarative_pdm.
-
-        Returns:
-            None
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        declarative_pdm = DeclarativePdm(pdm=declarative_tables.to_api())
-        self._layout_api.set_pdm_layout(data_source_id, declarative_pdm)
-
-    def store_declarative_pdm(self, data_source_id: str, layout_root_path: Path = Path.cwd()) -> None:
-        """Store physical data model layout in directory hierarchy for a given data source.
-
-        gooddata_layouts
-        └── organization_id
-                └── data_sources
-                        └── data_source_a
-                                └── pdm
-                                    ├── table_A.yaml
-                                    └── table_B.yaml
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-            layout_root_path (Path, optional):
-                Path to the root of the layout directory. Defaults to Path.cwd().
-
-        Returns:
-            None
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        data_source_folder = self.data_source_folder(data_source_id, layout_root_path)
-        self.get_declarative_pdm(data_source_id).store_to_disk(data_source_folder)
-
-    def load_declarative_pdm(
-        self, data_source_id: str, layout_root_path: Path = Path.cwd()
-    ) -> CatalogDeclarativeTables:
-        """Load declarative physical data model layout.
-
-        Load declarative physical data model layout, which was stored using
-        `store_declarative_pdm` for a given data source.
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-            layout_root_path (Path, optional):
-                Path to the root of the layout directory. Defaults to Path.cwd().
-
-        Returns:
-            CatalogDeclarativeTables: Physical Data Model object.
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        data_source_folder = self.data_source_folder(data_source_id, layout_root_path)
-        return CatalogDeclarativeTables.load_from_disk(data_source_folder)
-
-    def load_and_put_declarative_pdm(self, data_source_id: str, layout_root_path: Path = Path.cwd()) -> None:
-        """Loads and sets layouts stored using `store_declarative_pdm`.
-
-        This method combines load_declarative_pdm and `put_declarative_pdm` methods
-        to load and set layouts stored using `store_declarative_pdm`.
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-            layout_root_path (Path, optional):
-                Path to the root of the layout directory. Defaults to Path.cwd().
-
-        Returns:
-            None
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.put_declarative_pdm(data_source_id, self.load_declarative_pdm(data_source_id, layout_root_path))
-
-    def store_pdm_to_disk(self, datasource_id: str, path: Path = Path.cwd()) -> None:
-        """Store the physical data model layout in the directory for a given data source.
-
-        The directory structure below shows the output for the path set to Path("pdm_location").
-        pdm_location
-            └── pdm
-                ├── table_A.yaml
-                └── table_B.yaml
-
-        Args:
-            datasource_id (str):
-                Data Source identification string. e.g. "demo"
-            path (Path, optional):
-                Path to the root of the layout directory. Defaults to Path.cwd().
-
-        Returns:
-            None
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.get_declarative_pdm(datasource_id).store_to_disk(path)
-
-    @staticmethod
-    def load_pdm_from_disk(path: Path = Path.cwd()) -> CatalogDeclarativeTables:
-        """This method is used to load pdm stored to disk using method store_pdm_to_disk.
-
-        Args:
-            path (Path, optional):
-                Path to the root of the layout directory. Defaults to Path.cwd().
-
-        Returns:
-            CatalogDeclarativeTables:
-                Physical Data Model object.
-        """
-        warn(
-            _PDM_DEPRECATION_MSG,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return CatalogDeclarativeTables.load_from_disk(path)
-
     # Actions methods are listed below
 
     def generate_logical_model(
@@ -480,22 +318,6 @@ class CatalogDataSourceService(CatalogServiceBase):
         if report_warnings:
             self.report_warnings(scan_result.warnings)
         return scan_result
-
-    def scan_and_put_pdm(
-        self, data_source_id: str, scan_request: CatalogScanModelRequest = CatalogScanModelRequest()
-    ) -> None:
-        """This method combines scan_data_source and put_declarative_pdm methods.
-
-        Args:
-            data_source_id (str):
-                Data Source identification string. e.g. "demo"
-            scan_request (CatalogScanModelRequest, optional):
-                Options for the Scan Request. Defaults to CatalogScanModelRequest().
-
-        Returns:
-            None
-        """
-        self.put_declarative_pdm(data_source_id, self.scan_data_source(data_source_id, scan_request).pdm)
 
     def scan_schemata(self, data_source_id: str) -> list[str]:
         """Returns a list of schemas that exist in the database.

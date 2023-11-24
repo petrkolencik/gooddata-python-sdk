@@ -76,12 +76,42 @@ interactions:
       body:
         string:
           data:
+            - id: order_amount
+              type: metric
+              attributes:
+                title: Order Amount
+                areRelationsValid: true
+                createdAt: 2023-11-27 10:00
+                content:
+                  format: $#,##0
+                  maql: SELECT SUM({fact/price}*{fact/quantity})
+              links:
+                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/order_amount
+              meta:
+                origin:
+                  originType: NATIVE
+                  originId: demo
+            - id: percent_revenue
+              type: metric
+              attributes:
+                title: '% Revenue'
+                areRelationsValid: true
+                createdAt: 2023-11-27 10:00
+                content:
+                  format: '#,##0.0%'
+                  maql: SELECT {metric/revenue} / {metric/total_revenue}
+              links:
+                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/percent_revenue
+              meta:
+                origin:
+                  originType: NATIVE
+                  originId: demo
             - id: amount_of_active_customers
               type: metric
               attributes:
                 title: '# of Active Customers'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0'
                   maql: SELECT COUNT({attribute/customer_id},{attribute/order_line_id})
@@ -96,7 +126,7 @@ interactions:
               attributes:
                 title: '# of Orders'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0'
                   maql: SELECT COUNT({attribute/order_id})
@@ -111,7 +141,7 @@ interactions:
               attributes:
                 title: '# of Top Customers'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0'
                   maql: 'SELECT {metric/amount_of_active_customers} WHERE (SELECT
@@ -128,7 +158,7 @@ interactions:
                 title: '# of Valid Orders'
                 description: ''
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.00'
                   maql: SELECT {metric/amount_of_orders} WHERE NOT ({label/order_status}
@@ -144,7 +174,7 @@ interactions:
               attributes:
                 title: Campaign Spend
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT SUM({fact/spend})
@@ -154,32 +184,19 @@ interactions:
                 origin:
                   originType: NATIVE
                   originId: demo
-            - id: order_amount
+            - id: revenue
               type: metric
               attributes:
-                title: Order Amount
+                title: Revenue
+                description: ''
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
-                  maql: SELECT SUM({fact/price}*{fact/quantity})
+                  maql: SELECT {metric/order_amount} WHERE NOT ({label/order_status}
+                    IN ("Returned", "Canceled"))
               links:
-                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/order_amount
-              meta:
-                origin:
-                  originType: NATIVE
-                  originId: demo
-            - id: percent_revenue
-              type: metric
-              attributes:
-                title: '% Revenue'
-                areRelationsValid: true
-                createdAt: 2023-11-10 10:14
-                content:
-                  format: '#,##0.0%'
-                  maql: SELECT {metric/revenue} / {metric/total_revenue}
-              links:
-                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/percent_revenue
+                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/revenue
               meta:
                 origin:
                   originType: NATIVE
@@ -189,7 +206,7 @@ interactions:
               attributes:
                 title: '% Revenue from Top 10 Customers'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.0%'
                   maql: "SELECT\n (SELECT {metric/revenue} WHERE (SELECT {metric/revenue_top_10}\
@@ -205,7 +222,7 @@ interactions:
               attributes:
                 title: '% Revenue from Top 10% Customers'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.0%'
                   maql: "SELECT\n (SELECT {metric/revenue} WHERE (SELECT {metric/revenue_top_10_percent}\
@@ -216,28 +233,12 @@ interactions:
                 origin:
                   originType: NATIVE
                   originId: demo
-            - id: revenue-outdoor
-              type: metric
-              attributes:
-                title: Revenue (Outdoor)
-                areRelationsValid: true
-                createdAt: 2023-11-10 10:14
-                content:
-                  format: $#,##0
-                  maql: SELECT {metric/revenue} WHERE {label/products.category} IN
-                    ("Outdoor")
-              links:
-                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/revenue-outdoor
-              meta:
-                origin:
-                  originType: NATIVE
-                  originId: demo
             - id: percent_revenue_from_top_10_percent_products
               type: metric
               attributes:
                 title: '% Revenue from Top 10% Products'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.0%'
                   maql: "SELECT\n (SELECT {metric/revenue} WHERE (SELECT {metric/revenue_top_10_percent}\
@@ -253,7 +254,7 @@ interactions:
               attributes:
                 title: '% Revenue from Top 10 Products'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.0%'
                   maql: "SELECT\n (SELECT {metric/revenue} WHERE (SELECT {metric/revenue_top_10}\
@@ -269,7 +270,7 @@ interactions:
               attributes:
                 title: '% Revenue in Category'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.0%'
                   maql: SELECT {metric/revenue} / (SELECT {metric/revenue} BY {attribute/products.category},
@@ -285,7 +286,7 @@ interactions:
               attributes:
                 title: '% Revenue per Product'
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: '#,##0.0%'
                   maql: SELECT {metric/revenue} / (SELECT {metric/revenue} BY ALL
@@ -296,29 +297,12 @@ interactions:
                 origin:
                   originType: NATIVE
                   originId: demo
-            - id: revenue
-              type: metric
-              attributes:
-                title: Revenue
-                description: ''
-                areRelationsValid: true
-                createdAt: 2023-11-10 10:14
-                content:
-                  format: $#,##0
-                  maql: SELECT {metric/order_amount} WHERE NOT ({label/order_status}
-                    IN ("Returned", "Canceled"))
-              links:
-                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/revenue
-              meta:
-                origin:
-                  originType: NATIVE
-                  originId: demo
             - id: revenue-clothing
               type: metric
               attributes:
                 title: Revenue (Clothing)
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/revenue} WHERE {label/products.category} IN
@@ -334,7 +318,7 @@ interactions:
               attributes:
                 title: Revenue (Electronic)
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/revenue} WHERE {label/products.category} IN
@@ -350,7 +334,7 @@ interactions:
               attributes:
                 title: Revenue (Home)
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/revenue} WHERE {label/products.category} IN
@@ -361,12 +345,28 @@ interactions:
                 origin:
                   originType: NATIVE
                   originId: demo
+            - id: revenue-outdoor
+              type: metric
+              attributes:
+                title: Revenue (Outdoor)
+                areRelationsValid: true
+                createdAt: 2023-11-27 10:00
+                content:
+                  format: $#,##0
+                  maql: SELECT {metric/revenue} WHERE {label/products.category} IN
+                    ("Outdoor")
+              links:
+                self: http://localhost:3000/api/v1/entities/workspaces/demo/metrics/revenue-outdoor
+              meta:
+                origin:
+                  originType: NATIVE
+                  originId: demo
             - id: revenue_per_customer
               type: metric
               attributes:
                 title: Revenue per Customer
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0.0
                   maql: SELECT AVG(SELECT {metric/revenue} BY {attribute/customer_id})
@@ -381,7 +381,7 @@ interactions:
               attributes:
                 title: Revenue per Dollar Spent
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0.0
                   maql: SELECT {metric/revenue} / {metric/campaign_spend}
@@ -396,7 +396,7 @@ interactions:
               attributes:
                 title: Revenue / Top 10
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/revenue} WHERE TOP(10) OF ({metric/revenue})
@@ -411,7 +411,7 @@ interactions:
               attributes:
                 title: Revenue / Top 10%
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/revenue} WHERE TOP(10%) OF ({metric/revenue})
@@ -426,7 +426,7 @@ interactions:
               attributes:
                 title: Total Revenue
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/revenue} BY ALL OTHER
@@ -441,7 +441,7 @@ interactions:
               attributes:
                 title: Total Revenue (No Filters)
                 areRelationsValid: true
-                createdAt: 2023-11-10 10:14
+                createdAt: 2023-11-27 10:00
                 content:
                   format: $#,##0
                   maql: SELECT {metric/total_revenue} WITHOUT PARENT FILTER
@@ -466,11 +466,11 @@ interactions:
                 measure:
                   item:
                     identifier:
-                      id: amount_of_active_customers
+                      id: order_amount
                       type: metric
                   computeRatio: false
                   filters: []
-              localIdentifier: amount_of_active_customers
+              localIdentifier: order_amount
         resultSpec:
           dimensions:
             - itemIdentifiers:
@@ -546,19 +546,19 @@ interactions:
         X-XSS-Protection:
           - 1 ; mode=block
         content-length:
-          - '272'
+          - '250'
       body:
         string:
           executionResponse:
             dimensions:
               - headers:
                   - measureGroupHeaders:
-                      - localIdentifier: amount_of_active_customers
-                        format: '#,##0'
-                        name: '# of Active Customers'
+                      - localIdentifier: order_amount
+                        format: $#,##0
+                        name: Order Amount
                 localIdentifier: dim_0
             links:
-              executionResult: 7cf8153f8582a4066d9e7ba6ac827a6ed578bd38
+              executionResult: 935e801ad6bf2c9a82821044b90423c124e891a0
   - request:
       method: POST
       uri: http://localhost:3000/api/v1/actions/dataSources/demo-test-ds/uploadNotification
@@ -640,11 +640,11 @@ interactions:
                 measure:
                   item:
                     identifier:
-                      id: amount_of_active_customers
+                      id: order_amount
                       type: metric
                   computeRatio: false
                   filters: []
-              localIdentifier: amount_of_active_customers
+              localIdentifier: order_amount
         resultSpec:
           dimensions:
             - itemIdentifiers:
@@ -720,16 +720,16 @@ interactions:
         X-XSS-Protection:
           - 1 ; mode=block
         content-length:
-          - '272'
+          - '250'
       body:
         string:
           executionResponse:
             dimensions:
               - headers:
                   - measureGroupHeaders:
-                      - localIdentifier: amount_of_active_customers
-                        format: '#,##0'
-                        name: '# of Active Customers'
+                      - localIdentifier: order_amount
+                        format: $#,##0
+                        name: Order Amount
                 localIdentifier: dim_0
             links:
-              executionResult: 255daa5393ed1bb68b0e9c01633e04f0dddf93de
+              executionResult: e33e5f06ef11ddb14abbc5f9ea66a4f945612b82

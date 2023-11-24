@@ -29,7 +29,6 @@ from gooddata_sdk import (
     CatalogScanModelRequest,
     DatabricksAttributes,
     ExecutionDefinition,
-    GoodDataApiClient,
     GoodDataSdk,
     MsSqlAttributes,
     PostgresAttributes,
@@ -66,7 +65,7 @@ def test_generate_logical_model(test_config: dict):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
     declarative_model = sdk.catalog_workspace_content.get_declarative_ldm(test_config["workspace"])
     generate_ldm_request = CatalogGenerateLdmRequest(
-        separator="__", wdf_prefix="wdf", workspace_id=test_config["workspace"]
+        separator="__", wdf_prefix="wdf", workspace_id=test_config["workspace"], pdm=get_scan_result_pdm()
     )
     generated_declarative_model = sdk.catalog_data_source.generate_logical_model(
         test_config["data_source"], generate_ldm_request
@@ -89,6 +88,7 @@ def test_generate_logical_model_with_sql_datasets(test_config: dict):
         separator="__",
         wdf_prefix="wdf",
         pdm=CatalogPdmLdmRequest(
+            tables=get_scan_result_pdm()["tables"],
             sqls=[
                 # Test sql-dataset specific attributes, facts, references
                 CatalogPdmSql(
@@ -118,7 +118,7 @@ def test_generate_logical_model_with_sql_datasets(test_config: dict):
                         SqlColumn(name="wdf__region", data_type="STRING"),
                     ],
                 ),
-            ]
+            ],
         ),
     )
     generated_declarative_model = sdk.catalog_data_source.generate_logical_model(
@@ -335,31 +335,6 @@ def test_catalog_patch_data_source(test_config):
         sdk.catalog_data_source.delete_data_source("test")
 
 
-@gd_vcr.use_cassette(str(_fixtures_dir / "demo_data_source_tables.yaml"))
-def test_catalog_data_source_table(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    data_source_tables = sdk.catalog_data_source.list_data_source_tables(test_config["data_source"])
-
-    assert len(data_source_tables) == 5
-    order_lines = next(filter(lambda x: x.id == "order_lines", data_source_tables))
-    assert len(order_lines.attributes.columns) == 11
-
-
-@gd_vcr.use_cassette(str(_fixtures_dir / "declarative_data_sources.yaml"))
-def test_catalog_declarative_data_sources(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    client = GoodDataApiClient(host=test_config["host"], token=test_config["token"])
-    layout_api = client.layout_api
-
-    data_sources_o = sdk.catalog_data_source.get_declarative_data_sources()
-    data_sources = data_sources_o.data_sources
-
-    assert len(data_sources) == 1
-    assert data_sources[0].id == test_config["data_source"]
-    assert len(data_sources[0].pdm.tables) == 5
-    assert data_sources_o.to_dict(camel_case=True) == layout_api.get_data_sources_layout().to_dict(camel_case=True)
-
-
 @gd_vcr.use_cassette(str(_fixtures_dir / "demo_delete_declarative_data_sources.yaml"))
 def test_delete_declarative_data_sources(test_config):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
@@ -411,11 +386,6 @@ def test_load_and_put_declarative_data_sources(test_config):
             "BIGQUERY",
             "POSTGRESQL",
             "VERTICA",
-        ]
-        assert [len(data_source.pdm.tables) for data_source in data_sources_o.data_sources] == [
-            0,
-            5,
-            5,
         ]
         assert len(data_sources_o.data_sources[0].parameters) == 1
         assert len(data_sources_o.data_sources[0].decoded_parameters) == 3
@@ -478,29 +448,6 @@ def test_declarative_data_sources(test_config):
         sdk.catalog_data_source.test_data_sources_connection(data_sources_e, credentials_path)
 
 
-@gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_get_declarative_pdm.yaml"))
-def test_get_declarative_pdm(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    pdm = sdk.catalog_data_source.get_declarative_pdm(test_config["data_source"])
-    assert len(pdm.tables) == 5
-
-
-@gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_put_declarative_pdm.yaml"))
-def test_put_declarative_pdm(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    data_source_id = test_config["data_source"]
-    pdm = sdk.catalog_data_source.get_declarative_pdm(data_source_id)
-    pdm_deleted_table = [table for table in pdm.tables if table.id == "order_lines"]
-
-    try:
-        pdm.tables = [table for table in pdm.tables if table.id != "order_lines"]
-        sdk.catalog_data_source.put_declarative_pdm(data_source_id, pdm)
-        assert len(pdm.tables) == 4
-    finally:
-        pdm.tables = pdm.tables + pdm_deleted_table
-        sdk.catalog_data_source.put_declarative_pdm(data_source_id, pdm)
-
-
 @gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_scan_model.yaml"))
 def test_scan_model(test_config):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
@@ -541,44 +488,6 @@ def test_scan_mode_with_schemata(test_config):
     assert len(scan_result.pdm.tables) == 5
 
 
-@gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_scan_and_put_declarative_pdm.yaml"))
-def test_scan_and_put_declarative_pdm(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    data_source_id = test_config["data_source"]
-
-    pdm = sdk.catalog_data_source.get_declarative_pdm(data_source_id)
-    assert len(pdm.tables) == 5
-
-    try:
-        scan_request = CatalogScanModelRequest(scan_tables=False, scan_views=True)
-        sdk.catalog_data_source.scan_and_put_pdm(data_source_id, scan_request)
-        pdm = sdk.catalog_data_source.get_declarative_pdm(data_source_id)
-        assert len(pdm.tables) == 0
-    finally:
-        sdk.catalog_data_source.scan_and_put_pdm(data_source_id)
-        pdm = sdk.catalog_data_source.get_declarative_pdm(data_source_id)
-        assert len(pdm.tables) == 5
-
-
-@gd_vcr.use_cassette(str(_fixtures_dir / "demo_store_and_load_and_put_declarative_pdm.yaml"))
-def test_store_and_load_and_put_declarative_pdm(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    data_source_id = test_config["data_source"]
-    store_folder = _current_dir / "store"
-    load_folder = _current_dir / "load"
-
-    pdm = sdk.catalog_data_source.get_declarative_pdm(data_source_id)
-    sdk.catalog_data_source.store_declarative_pdm(data_source_id, store_folder)
-    pdm_loaded = sdk.catalog_data_source.load_declarative_pdm(data_source_id, load_folder)
-    assert pdm == pdm_loaded
-    assert pdm.to_dict(camel_case=True) == pdm_loaded.to_dict(camel_case=True)
-
-    sdk.catalog_data_source.load_and_put_declarative_pdm(data_source_id, load_folder)
-    pdm_loaded = sdk.catalog_data_source.load_declarative_pdm(data_source_id, load_folder)
-    assert pdm == pdm_loaded
-    assert pdm.to_dict(camel_case=True) == pdm_loaded.to_dict(camel_case=True)
-
-
 @gd_vcr.use_cassette(str(_fixtures_dir / "demo_scan_schemata.yaml"))
 def test_scan_schemata(test_config):
     sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
@@ -587,17 +496,6 @@ def test_scan_schemata(test_config):
     schemata = sdk.catalog_data_source.scan_schemata(data_source_id)
     assert len(schemata) == 1
     assert "demo" in schemata
-
-
-@gd_vcr.use_cassette(str(_fixtures_dir / "pdm_store_load.yaml"))
-def test_pdm_store_load(test_config):
-    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
-    path = _current_dir / "store"
-    pdm = sdk.catalog_data_source.get_declarative_pdm(test_config["data_source"])
-
-    sdk.catalog_data_source.store_pdm_to_disk(test_config["data_source"], path)
-    loaded_pdm = sdk.catalog_data_source.load_pdm_from_disk(path)
-    assert loaded_pdm == pdm
 
 
 @gd_vcr.use_cassette(str(_fixtures_dir / "scan_sql.yaml"))
@@ -778,3 +676,10 @@ def test_catalog_data_source_databricks(test_config):
         ),
     )
     assert data_source.url == "jdbc:databricks://Host:443/default;httpPath=xyz123abc"
+
+
+def get_scan_result_pdm():
+    path = _current_dir / "expected" / "scan_result_pdm.json"
+    with open(path) as f:
+        pdm = json.load(f)
+    return pdm

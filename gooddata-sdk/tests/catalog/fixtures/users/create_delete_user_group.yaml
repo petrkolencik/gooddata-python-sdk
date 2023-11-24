@@ -200,7 +200,7 @@ interactions:
             to access it.
           status: 404
           title: Not Found
-          traceId: 2aab4d835d79a89f
+          traceId: 7737a893b835468e
   - request:
       method: POST
       uri: http://localhost:3000/api/v1/entities/userGroups
@@ -480,17 +480,6 @@ interactions:
                 name: demo group
               links:
                 self: http://localhost:3000/api/v1/entities/userGroups/demoGroup
-            - id: newUserGroup
-              type: userGroup
-              attributes:
-                name: NEWUSERGROUP
-              relationships:
-                parents:
-                  data:
-                    - id: demoGroup
-                      type: userGroup
-              links:
-                self: http://localhost:3000/api/v1/entities/userGroups/newUserGroup
             - id: visitorsGroup
               type: userGroup
               attributes:
@@ -502,6 +491,17 @@ interactions:
                       type: userGroup
               links:
                 self: http://localhost:3000/api/v1/entities/userGroups/visitorsGroup
+            - id: newUserGroup
+              type: userGroup
+              attributes:
+                name: NEWUSERGROUP
+              relationships:
+                parents:
+                  data:
+                    - id: demoGroup
+                      type: userGroup
+              links:
+                self: http://localhost:3000/api/v1/entities/userGroups/newUserGroup
           included:
             - id: adminGroup
               type: userGroup

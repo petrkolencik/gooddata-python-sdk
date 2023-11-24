@@ -140,10 +140,10 @@ interactions:
                         name: Revenue
                 localIdentifier: dim_0
             links:
-              executionResult: 364553afe8d743fab815d12a08dfe97ed4558a52
+              executionResult: f06840e67679c3d2fce8902a088192058a3d2a51
   - request:
       method: GET
-      uri: http://localhost:3000/api/v1/actions/workspaces/demo/execution/afm/execute/result/364553afe8d743fab815d12a08dfe97ed4558a52?offset=0&limit=256
+      uri: http://localhost:3000/api/v1/actions/workspaces/demo/execution/afm/execute/result/f06840e67679c3d2fce8902a088192058a3d2a51?offset=0&limit=256
       body: null
       headers:
         Accept:

@@ -79,7 +79,7 @@ interactions:
             to access it.
           status: 404
           title: Not Found
-          traceId: 2defde43b2445f02
+          traceId: ac5631f6ec71d1a2
   - request:
       method: POST
       uri: http://localhost:3000/api/v1/entities/workspaces
@@ -714,7 +714,7 @@ interactions:
               name: Default Organization
               hostname: localhost
               allowedOrigins: []
-              oauthClientId: 3525347e-b7f7-4639-8f36-4c8871c1e53b
+              oauthClientId: 99540758-4414-437e-842c-b33333cb26b2
           links:
             self: http://localhost:3000/api/v1/entities/admin/organizations/default
   - request:
@@ -734,6 +734,8 @@ interactions:
                   multivalue: false
                   sourceColumns:
                     - campaign_id
+                  sourceColumnDataTypes:
+                    - INT
               title: Campaign channels
               description: Campaign channels
               attributes:
@@ -741,6 +743,7 @@ interactions:
                   labels: []
                   sourceColumn: campaign_channel_id
                   title: Campaign channel id
+                  sourceColumnDataType: STRING
                   description: Campaign channel id
                   tags:
                     - Campaign channels
@@ -748,6 +751,7 @@ interactions:
                   labels: []
                   sourceColumn: category
                   title: Category
+                  sourceColumnDataType: STRING
                   description: Category
                   tags:
                     - Campaign channels
@@ -755,6 +759,7 @@ interactions:
                   labels: []
                   sourceColumn: type
                   title: Type
+                  sourceColumnDataType: STRING
                   description: Type
                   tags:
                     - Campaign channels
@@ -762,12 +767,14 @@ interactions:
                 - id: budget
                   sourceColumn: budget
                   title: Budget
+                  sourceColumnDataType: NUMERIC
                   description: Budget
                   tags:
                     - Campaign channels
                 - id: spend
                   sourceColumn: spend
                   title: Spend
+                  sourceColumnDataType: NUMERIC
                   description: Spend
                   tags:
                     - Campaign channels
@@ -775,6 +782,9 @@ interactions:
                 dataSourceId: demo-test-ds
                 id: campaign_channels
                 type: dataSource
+                path:
+                  - demo
+                  - campaign_channels
               tags:
                 - Campaign channels
             - grain:
@@ -789,6 +799,7 @@ interactions:
                   labels: []
                   sourceColumn: campaign_id
                   title: Campaign id
+                  sourceColumnDataType: INT
                   description: Campaign id
                   tags:
                     - Campaigns
@@ -796,6 +807,7 @@ interactions:
                   labels: []
                   sourceColumn: campaign_name
                   title: Campaign name
+                  sourceColumnDataType: STRING
                   description: Campaign name
                   tags:
                     - Campaigns
@@ -804,6 +816,9 @@ interactions:
                 dataSourceId: demo-test-ds
                 id: campaigns
                 type: dataSource
+                path:
+                  - demo
+                  - campaigns
               tags:
                 - Campaigns
             - grain:
@@ -818,6 +833,7 @@ interactions:
                   labels: []
                   sourceColumn: customer_id
                   title: Customer id
+                  sourceColumnDataType: INT
                   description: Customer id
                   tags:
                     - Customers
@@ -825,6 +841,7 @@ interactions:
                   labels: []
                   sourceColumn: customer_name
                   title: Customer name
+                  sourceColumnDataType: STRING
                   description: Customer name
                   tags:
                     - Customers
@@ -832,6 +849,7 @@ interactions:
                   labels: []
                   sourceColumn: region
                   title: Region
+                  sourceColumnDataType: STRING
                   description: Region
                   tags:
                     - Customers
@@ -840,11 +858,13 @@ interactions:
                     - id: geo__state__location
                       sourceColumn: geo__state__location
                       title: Location
+                      sourceColumnDataType: STRING
                       description: Location
                       tags:
                         - Customers
                   sourceColumn: state
                   title: State
+                  sourceColumnDataType: STRING
                   description: State
                   tags:
                     - Customers
@@ -853,6 +873,9 @@ interactions:
                 dataSourceId: demo-test-ds
                 id: customers
                 type: dataSource
+                path:
+                  - demo
+                  - customers
               tags:
                 - Customers
             - grain:
@@ -866,24 +889,32 @@ interactions:
                   multivalue: false
                   sourceColumns:
                     - campaign_id
+                  sourceColumnDataTypes:
+                    - INT
                 - identifier:
                     id: customers
                     type: dataset
                   multivalue: false
                   sourceColumns:
                     - customer_id
+                  sourceColumnDataTypes:
+                    - INT
                 - identifier:
                     id: date
                     type: dataset
                   multivalue: false
                   sourceColumns:
                     - date
+                  sourceColumnDataTypes:
+                    - DATE
                 - identifier:
                     id: products
                     type: dataset
                   multivalue: false
                   sourceColumns:
                     - product_id
+                  sourceColumnDataTypes:
+                    - INT
               title: Order lines
               description: Order lines
               attributes:
@@ -891,6 +922,7 @@ interactions:
                   labels: []
                   sourceColumn: order_id
                   title: Order id
+                  sourceColumnDataType: STRING
                   description: Order id
                   tags:
                     - Order lines
@@ -898,6 +930,7 @@ interactions:
                   labels: []
                   sourceColumn: order_line_id
                   title: Order line id
+                  sourceColumnDataType: STRING
                   description: Order line id
                   tags:
                     - Order lines
@@ -905,6 +938,7 @@ interactions:
                   labels: []
                   sourceColumn: order_status
                   title: Order status
+                  sourceColumnDataType: STRING
                   description: Order status
                   tags:
                     - Order lines
@@ -912,12 +946,14 @@ interactions:
                 - id: price
                   sourceColumn: price
                   title: Price
+                  sourceColumnDataType: NUMERIC
                   description: Price
                   tags:
                     - Order lines
                 - id: quantity
                   sourceColumn: quantity
                   title: Quantity
+                  sourceColumnDataType: NUMERIC
                   description: Quantity
                   tags:
                     - Order lines
@@ -925,8 +961,16 @@ interactions:
                 dataSourceId: demo-test-ds
                 id: order_lines
                 type: dataSource
+                path:
+                  - demo
+                  - order_lines
               tags:
                 - Order lines
+              workspaceDataFilterColumns:
+                - dataType: STRING
+                  name: wdf__region
+                - dataType: STRING
+                  name: wdf__state
             - grain:
                 - id: product_id
                   type: attribute
@@ -939,6 +983,7 @@ interactions:
                   labels: []
                   sourceColumn: product_id
                   title: Product id
+                  sourceColumnDataType: INT
                   description: Product id
                   tags:
                     - Products
@@ -946,6 +991,7 @@ interactions:
                   labels: []
                   sourceColumn: product_name
                   title: Product name
+                  sourceColumnDataType: STRING
                   description: Product name
                   tags:
                     - Products
@@ -953,6 +999,7 @@ interactions:
                   labels: []
                   sourceColumn: category
                   title: Category
+                  sourceColumnDataType: STRING
                   description: Category
                   tags:
                     - Products
@@ -961,6 +1008,9 @@ interactions:
                 dataSourceId: demo-test-ds
                 id: products
                 type: dataSource
+                path:
+                  - demo
+                  - products
               tags:
                 - Products
           dateInstances:

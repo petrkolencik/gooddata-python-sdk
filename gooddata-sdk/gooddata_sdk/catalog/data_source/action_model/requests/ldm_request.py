@@ -49,7 +49,7 @@ class CatalogGenerateLdmRequest(Base):
     grain_reference_prefix: Optional[str] = None
     denorm_prefix: Optional[str] = None
     wdf_prefix: Optional[str] = None
-    pdm: Optional[CatalogPdmLdmRequest] = None
+    pdm: CatalogPdmLdmRequest = CatalogPdmLdmRequest()
     workspace_id: Optional[str] = None
 
     @staticmethod
